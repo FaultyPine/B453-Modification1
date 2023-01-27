@@ -1,0 +1,12 @@
+
+=== BUGS
+- Holding a move input in mid-air towards a wall pins the player to that wall
+- Large invisible corners on environment collision
+- Don't seem to be able to give equivalent craft for departures, has to be original instance
+- Brief shadow flicker when new craft spawned, possibly to do with NPC character shadow projector?
+- Spacecraft vibrates while player is standing on it
+- Spacecraft pitch forward and backward rapidly when moving horizontally over ramps
+- Sometimes a spacecraft can bump another spacecraft up into the air
+- World-space arrivals/departures text doesn't receive shadows
+- UI departure animations can go wrong if the resolution of the game is changed at runtime, such as by entering/exiting fullscreen
+- Restarting the game seems to not reset some spacecraft/NPCs correctly sometimes

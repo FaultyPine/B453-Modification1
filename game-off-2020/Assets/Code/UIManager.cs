@@ -24,6 +24,7 @@ public class UIManager : MonoBehaviour
 	[SerializeField] private GameObject _rootGame = null;
 	[SerializeField] private TextMeshProUGUI _textArrivals = null;
 	[SerializeField] private TextMeshProUGUI _textDepartures = null;
+    [SerializeField] private Transform worldspaceCanvas = null;
 	[SerializeField] private TextMeshProUGUI _textHUD = null;
 	[SerializeField] private UISpacecraft _prefabUISpacecraft = null;
 	[SerializeField] private TextMeshProUGUI _prefabTextCredits = null;
@@ -57,14 +58,14 @@ public class UIManager : MonoBehaviour
 
 	private void Start()
 	{
-        // TODO: make the "canvasTransform" of arrivals and departures a canvas with render mode in World Space
-		int maxArrivals = Globals.Game.MaxQueuedArrivals;
-		CreatePool(transform, _prefabUISpacecraft, ref _arrivals, maxArrivals, "Arrivals");
-		_queuedArrivals = new List<QueuedSpacecraftUI>(maxArrivals);
+        if (worldspaceCanvas != null) {
+            int maxArrivals = Globals.Game.MaxQueuedArrivals;
+            CreatePool(worldspaceCanvas, _prefabUISpacecraft, ref _arrivals, maxArrivals, "Arrivals");
+            _queuedArrivals = new List<QueuedSpacecraftUI>(maxArrivals);
 
-		int maxDepartures = Globals.Game.MaxQueuedDepartures;
-		CreatePool(transform, _prefabUISpacecraft, ref _departures, maxDepartures, "Departures");
-		_queuedDepartures = new List<QueuedSpacecraftUI>(maxDepartures);
+            int maxDepartures = Globals.Game.MaxQueuedDepartures;
+            CreatePool(worldspaceCanvas, _prefabUISpacecraft, ref _departures, maxDepartures, "Departures");
+            _queuedDepartures = new List<QueuedSpacecraftUI>(maxDepartures);
 
 		int maxCredits = 2 * (maxArrivals + maxDepartures);
 		CreatePool(transform, _prefabTextCredits, ref _credits, maxCredits, "CreditsText");
@@ -78,6 +79,7 @@ public class UIManager : MonoBehaviour
 
 		Globals.Game.OnGameStateChanged += OnGameStateChanged;
 		OnGameStateChanged(Globals.Game.State);
+        }
 	}
 
 	private void OnGameStateChanged(GameState state)
@@ -141,7 +143,7 @@ public class UIManager : MonoBehaviour
 
 	private void LateUpdate()
 	{
-		if (Globals.Game.State != GameState.Game)
+		if (Globals.Game.State != GameState.Game || worldspaceCanvas == null)
 		{
 			return;
 		}

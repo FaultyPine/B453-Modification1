@@ -178,6 +178,8 @@ public class Game : MonoBehaviour
 			_numCraftReturned = 0;
 
 			Globals.Player.transform.position = _playerSpawnPoint.position;
+            _approvalRating = 10;
+            Globals.UIManager.SetApprovalRating(_approvalRating);
 		}
 
 		if (OnGameStateChanged != null)
@@ -201,6 +203,51 @@ public class Game : MonoBehaviour
 			ChangeState(GameState.Menu);
 		}
 	}
+
+    private void OnApprovalRatingTanked() 
+    {
+        ChangeState(GameState.End);
+    }
+    private void OnFlightTimerExpired(Flight flight, bool arrival) 
+    {
+        if (_approvalRating == 0) 
+        {
+            OnApprovalRatingTanked();
+        }
+        else {
+            _approvalRating--;
+            Globals.UIManager.SetApprovalRating(_approvalRating);
+            Globals.UIManager.RemoveSpacecraft(flight.Craft, arrival);
+            flight.Craft.gameObject.SetActive(false);
+            DisableCraft(flight.Craft);
+            List<Flight> array = arrival ? _arrivals : _departures;
+            array.Remove(flight);
+        }
+    }
+
+    private void DisableCraft(Spacecraft craft) {
+        craft.DisableCollider();
+        craft.SetOutlineVisible(false);
+        craft.ResetModelRoll();
+        craft.enabled = false;
+        int numDrivable = _allDrivableCraft.Count;
+        for (int driveIndex = 0; driveIndex < numDrivable; ++driveIndex)
+        {
+            if (_allDrivableCraft[driveIndex] == craft)
+            {
+                _allDrivableCraft.RemoveAt(driveIndex);
+                _drivableTimers.RemoveAt(driveIndex);
+                break;
+            }
+        }
+    }
+    private void MakeCraftDrivable(Flight flight) {
+        flight.CraftMovementComplete = true;
+        flight.Craft.EnableCollider();
+        flight.Craft.enabled = true;
+        _allDrivableCraft.Add(flight.Craft);
+        _drivableTimers.Add(TIMER_LOCKED + Random.Range(_minTimeBeforeDeparture, _maxTimeBeforeDeparture));
+    }
 
 	private void UpdateGame()
 	{
@@ -278,6 +325,9 @@ public class Game : MonoBehaviour
 			{
 				flight.Timer += Time.deltaTime;
 				Globals.UIManager.UpdateSpacecraft(flight.Craft, flight.PercentRemaining, arrival: false);
+                if (flight.PercentRemaining <= 0.0f) {
+                    OnFlightTimerExpired(flight, false);
+                }
 			}
 		}
 
@@ -305,20 +355,7 @@ public class Game : MonoBehaviour
 						AddCredits(flight.PercentRemaining, flight.Craft.NPC.transform.position);
 
 						// Make craft no longer drivable
-						craft.DisableCollider();
-						craft.SetOutlineVisible(false);
-						craft.ResetModelRoll();
-						craft.enabled = false;
-						int numDrivable = _allDrivableCraft.Count;
-						for (int driveIndex = 0; driveIndex < numDrivable; ++driveIndex)
-						{
-							if (_allDrivableCraft[driveIndex] == craft)
-							{
-								_allDrivableCraft.RemoveAt(driveIndex);
-								_drivableTimers.RemoveAt(driveIndex);
-								break;
-							}
-						}
+						DisableCraft(craft);
 
 						// Make NPC jump into craft
 						Globals.UIManager.RemoveSpacecraft(flight.Craft, arrival: false);
@@ -361,6 +398,9 @@ public class Game : MonoBehaviour
 			// Progress
 			flight.Timer += Time.deltaTime;
 			Globals.UIManager.UpdateSpacecraft(flight.Craft, flight.PercentRemaining, arrival: true);
+            if (flight.PercentRemaining <= 0.0f) {
+                OnFlightTimerExpired(flight, true);
+            }
 			bool justArrived = false;
 			if (canMove)
 			{
@@ -381,11 +421,7 @@ public class Game : MonoBehaviour
 			if (justArrived)
 			{
 				// Make craft drivable
-				flight.CraftMovementComplete = true;
-				flight.Craft.EnableCollider();
-				flight.Craft.enabled = true;
-				_allDrivableCraft.Add(flight.Craft);
-				_drivableTimers.Add(TIMER_LOCKED + Random.Range(_minTimeBeforeDeparture, _maxTimeBeforeDeparture));
+				MakeCraftDrivable(flight);
 
 				// Make NPC jump out of craft
 				flight.NPCJumping = true;

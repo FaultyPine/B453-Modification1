@@ -24,6 +24,7 @@ public class UIManager : MonoBehaviour
 	[SerializeField] private GameObject _rootGame = null;
 	[SerializeField] private TextMeshProUGUI _textArrivals = null;
 	[SerializeField] private TextMeshProUGUI _textDepartures = null;
+    [SerializeField] TextMeshProUGUI _textApprovalRating = null;
     [SerializeField] private Transform worldspaceCanvas = null;
 	[SerializeField] private TextMeshProUGUI _textHUD = null;
 	[SerializeField] private UISpacecraft _prefabUISpacecraft = null;
@@ -259,6 +260,9 @@ public class UIManager : MonoBehaviour
 			}
 		}
 	}
+    public void SetApprovalRating(int rating) {
+        _textApprovalRating.text = "Approval Rating: " + rating.ToString() + " /10";
+    }
 
 	public void StartFlight(Spacecraft craft, bool arrival, float timerPercentage = 1.0f)
 	{
@@ -341,10 +345,17 @@ public class UIManager : MonoBehaviour
 	public void UpdateSpacecraft(Spacecraft craft, float timerPercentage, bool arrival)
 	{
 		UISpacecraft[] array = arrival ? _arrivals : _departures;
-        // first seaerch arrivals/departures
+        // first search arrivals/departures
         int i = System.Array.FindIndex(array, 0, array.Length, x => x.Craft == craft);
         if (i >= 0) {
             array[i].SetTimerPercentage(timerPercentage);
+            //if (timerPercentage <= 0.0f) {
+                // when timer runs out, decrease approval rating and remove ui from queue
+                //RemoveSpacecraft(craft, arrival);
+                //_approvalRating--;
+                //_textApprovalRating.text = "Approval Rating: " + _approvalRating.ToString() + " /10";
+                //Destroy(craft.gameObject);
+            //}
         }
 		else // didn't find craft, search queued arrivals/departures
 		{

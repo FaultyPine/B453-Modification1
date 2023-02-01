@@ -1,9 +1,9 @@
 Modification:
-- Put arrival/departure UI above relevant ship in-world (billboarded quad)
+- Put arrival/departure UI above relevant ship in-world (billboarded quad) -DONE
 
 Extension:
 Give you an "approval rating" and when you fail to deal with ships in a certain amount of time
-you lose rating. If your rating drops too much you lose
+you lose rating. If your rating drops too much you lose - DONE
 
 
 
